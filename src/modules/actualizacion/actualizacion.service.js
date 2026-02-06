@@ -9,7 +9,7 @@ const {
   obtenerCorteDatosSap,
   obtenerDevueltosPorPrediadorResumen,
   obtenerDevueltosPorPrediadorDetalle,
-} = require('./conservacion.queries');
+} = require('./actualizacion.queries');
 
 /**
  * Cache simple en memoria (por proceso Node).

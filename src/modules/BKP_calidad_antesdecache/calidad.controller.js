@@ -9,7 +9,7 @@ const {
   getCorteDatosSap,
   getDevueltosPorPrediadorResumen,
   getDevueltosPorPrediadorDetalle,
-} = require('./conservacion.service');
+} = require('./calidad.service');
 
 function normalizeCountTotal(total) {
   if (total && typeof total === 'object' && total.total !== undefined) {
