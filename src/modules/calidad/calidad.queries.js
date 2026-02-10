@@ -9,9 +9,8 @@ async function obtenerTramitesDevueltos() {
     INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u1
       ON z.cd_func_entrega = u1.sap_user AND u1.id_role_user = 5
     INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u2
-      ON z.cd_func_recibe = u2.sap_user AND u2.id_role_user = 1
+      ON z.cd_func_recibe = u2.sap_user AND u2.id_role_user IN (1, 2)
     WHERE z.fc_recepcion_tmt >= '2026-01-01'
-      AND z.devuelto = 'X'
   `;
 
   const result = await pool.query(query);
@@ -26,9 +25,8 @@ async function obtenerTramitesDevueltosConRespuesta() {
     INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u1
       ON z.cd_func_entrega = u1.sap_user AND u1.id_role_user = 5
     INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u2
-      ON z.cd_func_recibe = u2.sap_user AND u2.id_role_user = 1
+      ON z.cd_func_recibe = u2.sap_user AND u2.id_role_user IN (1, 2)
     WHERE z.fc_recepcion_tmt >= '2026-01-01'
-      AND z.devuelto = 'X'
       AND z.fc_salida_tmt > '1900-01-01'
   `;
 
@@ -44,9 +42,8 @@ async function obtenerTramitesDevueltosConRespuestaCumplen() {
     INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u1
       ON z.cd_func_entrega = u1.sap_user AND u1.id_role_user = 5
     INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u2
-      ON z.cd_func_recibe = u2.sap_user AND u2.id_role_user = 1
+      ON z.cd_func_recibe = u2.sap_user AND u2.id_role_user IN (1, 2)
     WHERE z.fc_recepcion_tmt >= '2026-01-01'
-      AND z.devuelto = 'X'
       AND z.fc_salida_tmt > '1900-01-01'
       AND (z.fc_salida_tmt - z.fc_recepcion_tmt) <= 5
   `;
@@ -63,9 +60,8 @@ async function obtenerTramitesDevueltosSinRespuesta() {
     INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u1
       ON z.cd_func_entrega = u1.sap_user AND u1.id_role_user = 5
     INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u2
-      ON z.cd_func_recibe = u2.sap_user AND u2.id_role_user = 1
+      ON z.cd_func_recibe = u2.sap_user AND u2.id_role_user IN (1, 2)
     WHERE z.fc_recepcion_tmt >= '2026-01-01'
-      AND z.devuelto = 'X'
       AND z.fc_salida_tmt = '1900-01-01'
   `;
 
@@ -91,9 +87,8 @@ async function obtenerTramitesDevueltosSinRespuestaSla() {
     INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u1
       ON z.cd_func_entrega = u1.sap_user AND u1.id_role_user = 5
     INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u2
-      ON z.cd_func_recibe = u2.sap_user AND u2.id_role_user = 1
+      ON z.cd_func_recibe = u2.sap_user AND u2.id_role_user IN (1, 2)
     WHERE z.fc_recepcion_tmt >= '2026-01-01'
-      AND z.devuelto = 'X'
       AND z.fc_salida_tmt = '1900-01-01'
   `;
 
@@ -117,9 +112,8 @@ async function obtenerPromedioDiasRespuesta() {
     INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u1
       ON z.cd_func_entrega = u1.sap_user AND u1.id_role_user = 5
     INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u2
-      ON z.cd_func_recibe = u2.sap_user AND u2.id_role_user = 1
+      ON z.cd_func_recibe = u2.sap_user AND u2.id_role_user IN (1, 2)
     WHERE z.fc_recepcion_tmt >= '2026-01-01'
-      AND z.devuelto = 'X'
       AND z.fc_salida_tmt > '1900-01-01'
   `;
 
@@ -143,9 +137,8 @@ async function obtenerPromedioDiasSinRespuesta() {
     INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u1
       ON z.cd_func_entrega = u1.sap_user AND u1.id_role_user = 5
     INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u2
-      ON z.cd_func_recibe = u2.sap_user AND u2.id_role_user = 1
+      ON z.cd_func_recibe = u2.sap_user AND u2.id_role_user IN (1, 2)
     WHERE z.fc_recepcion_tmt >= '2026-01-01'
-      AND z.devuelto = 'X'
       AND z.fc_salida_tmt = '1900-01-01'
   `;
 
@@ -183,9 +176,8 @@ async function obtenerDevueltosPorPrediadorResumen() {
     INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u_rev
       ON z.cd_func_entrega = u_rev.sap_user AND u_rev.id_role_user = 5
     INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u_pred
-      ON z.cd_func_recibe = u_pred.sap_user AND u_pred.id_role_user = 1
+      ON z.cd_func_recibe = u_pred.sap_user AND u_pred.id_role_user IN (1, 2)
     WHERE z.fc_recepcion_tmt >= '2026-01-01'
-      AND z.devuelto = 'X'
     GROUP BY u_pred.nombre_user, u_pred.sap_user
     ORDER BY total_devueltos DESC, u_pred.nombre_user ASC
   `;
@@ -222,7 +214,7 @@ async function obtenerDevueltosPorPrediadorDetalle(params = {}) {
 
   // filtros base
   where.push(`z.fc_recepcion_tmt >= '2026-01-01'`);
-  where.push(`z.devuelto = 'X'`);
+  //where.push(`z.devuelto = 'X'`);
 
   // roles (revisor entrega, prediador recibe)
   // (en el FROM ya están amarrados con joins)
@@ -280,7 +272,7 @@ async function obtenerDevueltosPorPrediadorDetalle(params = {}) {
     INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u_rev
       ON z.cd_func_entrega = u_rev.sap_user AND u_rev.id_role_user = 5
     INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u_pred
-      ON z.cd_func_recibe = u_pred.sap_user AND u_pred.id_role_user = 1
+      ON z.cd_func_recibe = u_pred.sap_user AND u_pred.id_role_user IN (1, 2)
     ${whereSql}
   `;
 
@@ -318,7 +310,7 @@ async function obtenerDevueltosPorPrediadorDetalle(params = {}) {
     INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u_rev
       ON z.cd_func_entrega = u_rev.sap_user AND u_rev.id_role_user = 5
     INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u_pred
-      ON z.cd_func_recibe = u_pred.sap_user AND u_pred.id_role_user = 1
+      ON z.cd_func_recibe = u_pred.sap_user AND u_pred.id_role_user IN (1, 2)
     ${whereSql}
     ORDER BY ${orderBy}
     LIMIT ${limit} OFFSET ${offset}
