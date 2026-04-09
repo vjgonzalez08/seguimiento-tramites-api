@@ -5,6 +5,16 @@ const pool = require('../../config/db');
 async function obtenerTramitesDevueltos() {
   const query = `
     SELECT COUNT(*) AS total
+    FROM ${SCHEMA2}.mvw_vg_app_sgt_ttes AS z
+    INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u1
+      ON z.cd_func_entrega = u1.sap_user AND u1.id_role_user = 1
+    INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u2
+      ON z.cd_func_recibe = u2.sap_user AND u2.id_role_user = 3
+    WHERE z.devuelto = 'X'
+  `;
+
+/*    const query = `
+    SELECT COUNT(*) AS total
     FROM ${SCHEMA1}.zcatt_dlle_trmte AS z
     INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u1
       ON z.cd_func_entrega = u1.sap_user AND u1.id_role_user = 1
@@ -12,7 +22,7 @@ async function obtenerTramitesDevueltos() {
       ON z.cd_func_recibe = u2.sap_user AND u2.id_role_user = 3
     WHERE z.fc_recepcion_tmt >= '2026-01-01'
       AND z.devuelto = 'X'
-  `;
+  `;*/
 
   const result = await pool.query(query);
   return result.rows[0];
@@ -22,6 +32,17 @@ async function obtenerTramitesDevueltos() {
 async function obtenerTramitesDevueltosConRespuesta() {
   const query = `
     SELECT COUNT(*) AS total
+    FROM ${SCHEMA2}.mvw_vg_app_sgt_ttes AS z
+    INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u1
+      ON z.cd_func_entrega = u1.sap_user AND u1.id_role_user = 1
+    INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u2
+      ON z.cd_func_recibe = u2.sap_user AND u2.id_role_user = 3
+    WHERE z.devuelto = 'X'
+      AND z.con_respuesta = true
+  `;
+
+    /*const query = `
+    SELECT COUNT(*) AS total
     FROM ${SCHEMA1}.zcatt_dlle_trmte AS z
     INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u1
       ON z.cd_func_entrega = u1.sap_user AND u1.id_role_user = 1
@@ -30,7 +51,7 @@ async function obtenerTramitesDevueltosConRespuesta() {
     WHERE z.fc_recepcion_tmt >= '2026-01-01'
       AND z.devuelto = 'X'
       AND z.fc_salida_tmt > '1900-01-01'
-  `;
+  `;*/
 
   const result = await pool.query(query);
   return result.rows[0];
@@ -39,6 +60,18 @@ async function obtenerTramitesDevueltosConRespuesta() {
 // Trámites devueltos con respuesta que cumplen (<= 5 días)
 async function obtenerTramitesDevueltosConRespuestaCumplen() {
   const query = `
+    SELECT COUNT(*) AS total
+    FROM ${SCHEMA2}.mvw_vg_app_sgt_ttes AS z
+    INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u1
+      ON z.cd_func_entrega = u1.sap_user AND u1.id_role_user = 1
+    INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u2
+      ON z.cd_func_recibe = u2.sap_user AND u2.id_role_user = 3
+    WHERE z.devuelto = 'X'
+      AND z.con_respuesta = true
+      AND z.dias_respuesta <= 5
+  `;
+
+    /*const query = `
     SELECT COUNT(*) AS total
     FROM ${SCHEMA1}.zcatt_dlle_trmte AS z
     INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u1
@@ -49,7 +82,7 @@ async function obtenerTramitesDevueltosConRespuestaCumplen() {
       AND z.devuelto = 'X'
       AND z.fc_salida_tmt > '1900-01-01'
       AND (z.fc_salida_tmt - z.fc_recepcion_tmt) <= 5
-  `;
+  `;*/
 
   const result = await pool.query(query);
   return result.rows[0];
@@ -59,6 +92,17 @@ async function obtenerTramitesDevueltosConRespuestaCumplen() {
 async function obtenerTramitesDevueltosSinRespuesta() {
   const query = `
     SELECT COUNT(*) AS total
+    FROM ${SCHEMA2}.mvw_vg_app_sgt_ttes AS z
+    INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u1
+      ON z.cd_func_entrega = u1.sap_user AND u1.id_role_user = 1
+    INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u2
+      ON z.cd_func_recibe = u2.sap_user AND u2.id_role_user = 3
+    WHERE z.devuelto = 'X'
+      AND z.sin_respuesta = true
+  `;
+
+    /*const query = `
+    SELECT COUNT(*) AS total
     FROM ${SCHEMA1}.zcatt_dlle_trmte AS z
     INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u1
       ON z.cd_func_entrega = u1.sap_user AND u1.id_role_user = 1
@@ -67,7 +111,7 @@ async function obtenerTramitesDevueltosSinRespuesta() {
     WHERE z.fc_recepcion_tmt >= '2026-01-01'
       AND z.devuelto = 'X'
       AND z.fc_salida_tmt = '1900-01-01'
-  `;
+  `;*/
 
   const result = await pool.query(query);
   return result.rows[0];
@@ -85,6 +129,19 @@ async function obtenerTramitesDevueltosSinRespuesta() {
 async function obtenerTramitesDevueltosSinRespuestaSla() {
   const query = `
     SELECT
+      COALESCE(SUM(CASE WHEN (CURRENT_DATE - z.fc_recepcion_tmt) <= 5 THEN 1 ELSE 0 END), 0) AS cumplen,
+      COALESCE(SUM(CASE WHEN (CURRENT_DATE - z.fc_recepcion_tmt) > 5 THEN 1 ELSE 0 END), 0) AS no_cumplen
+    FROM ${SCHEMA2}.mvw_vg_app_sgt_ttes AS z
+    INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u1
+      ON z.cd_func_entrega = u1.sap_user AND u1.id_role_user = 1
+    INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u2
+      ON z.cd_func_recibe = u2.sap_user AND u2.id_role_user = 3
+    WHERE z.devuelto = 'X'
+      AND z.sin_respuesta = true
+  `;
+
+    /*const query = `
+    SELECT
       SUM(CASE WHEN (CURRENT_DATE - z.fc_recepcion_tmt) <= 5 THEN 1 ELSE 0 END) AS cumplen,
       SUM(CASE WHEN (CURRENT_DATE - z.fc_recepcion_tmt) > 5 THEN 1 ELSE 0 END) AS no_cumplen
     FROM ${SCHEMA1}.zcatt_dlle_trmte AS z
@@ -95,7 +152,7 @@ async function obtenerTramitesDevueltosSinRespuestaSla() {
     WHERE z.fc_recepcion_tmt >= '2026-01-01'
       AND z.devuelto = 'X'
       AND z.fc_salida_tmt = '1900-01-01'
-  `;
+  `;*/
 
   const result = await pool.query(query);
   return result.rows[0];
@@ -112,6 +169,18 @@ async function obtenerTramitesDevueltosSinRespuestaSla() {
 async function obtenerPromedioDiasRespuesta() {
   const query = `
     SELECT
+      ROUND(AVG(z.dias_respuesta::numeric), 2) AS promedio_dias
+    FROM ${SCHEMA2}.mvw_vg_app_sgt_ttes AS z
+    INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u1
+      ON z.cd_func_entrega = u1.sap_user AND u1.id_role_user = 1
+    INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u2
+      ON z.cd_func_recibe = u2.sap_user AND u2.id_role_user = 3
+    WHERE z.devuelto = 'X'
+      AND z.con_respuesta = true
+  `;
+
+    /*const query = `
+    SELECT
       ROUND(AVG((z.fc_salida_tmt - z.fc_recepcion_tmt)::numeric), 2) AS promedio_dias
     FROM ${SCHEMA1}.zcatt_dlle_trmte AS z
     INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u1
@@ -121,7 +190,7 @@ async function obtenerPromedioDiasRespuesta() {
     WHERE z.fc_recepcion_tmt >= '2026-01-01'
       AND z.devuelto = 'X'
       AND z.fc_salida_tmt > '1900-01-01'
-  `;
+  `;*/
 
   const result = await pool.query(query);
   return result.rows[0];
@@ -139,6 +208,18 @@ async function obtenerPromedioDiasSinRespuesta() {
   const query = `
     SELECT
       ROUND(AVG((CURRENT_DATE - z.fc_recepcion_tmt)::numeric), 2) AS promedio_dias
+    FROM ${SCHEMA2}.mvw_vg_app_sgt_ttes AS z
+    INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u1
+      ON z.cd_func_entrega = u1.sap_user AND u1.id_role_user = 1
+    INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u2
+      ON z.cd_func_recibe = u2.sap_user AND u2.id_role_user = 3
+    WHERE z.devuelto = 'X'
+      AND z.sin_respuesta = true
+  `;
+
+    /*const query = `
+    SELECT
+      ROUND(AVG((CURRENT_DATE - z.fc_recepcion_tmt)::numeric), 2) AS promedio_dias
     FROM ${SCHEMA1}.zcatt_dlle_trmte AS z
     INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u1
       ON z.cd_func_entrega = u1.sap_user AND u1.id_role_user = 1
@@ -147,7 +228,7 @@ async function obtenerPromedioDiasSinRespuesta() {
     WHERE z.fc_recepcion_tmt >= '2026-01-01'
       AND z.devuelto = 'X'
       AND z.fc_salida_tmt = '1900-01-01'
-  `;
+  `;*/
 
   const result = await pool.query(query);
   return result.rows[0];
@@ -158,11 +239,20 @@ async function obtenerCorteDatosSap() {
   const query = `
     SELECT 
       TO_CHAR(
+        MAX(z.fecha_actualizacion),
+        'YYYY-MM-DD HH24:MI'
+      ) AS fecha_max
+    FROM ${SCHEMA2}.mvw_vg_app_sgt_ttes AS z
+  `;
+
+    /*const query = `
+    SELECT 
+      TO_CHAR(
         MAX(fecha_actualizacion),
         'YYYY-MM-DD HH24:MI'
       ) AS fecha_max
     FROM ${SCHEMA1}.zcatt_dlle_trmte
-  `;
+  `;*/
 
   const result = await pool.query(query);
   return result.rows[0];
@@ -179,6 +269,21 @@ async function obtenerDevueltosPorPrediadorResumen() {
       u_pred.nombre_user AS prediador_nombre,
       u_pred.sap_user AS prediador_sap,
       COUNT(*)::int AS total_devueltos
+    FROM ${SCHEMA2}.mvw_vg_app_sgt_ttes AS z
+    INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u_rev
+      ON z.cd_func_entrega = u_rev.sap_user AND u_rev.id_role_user = 1
+    INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u_pred
+      ON z.cd_func_recibe = u_pred.sap_user AND u_pred.id_role_user = 3
+    WHERE z.devuelto = 'X'
+    GROUP BY u_pred.nombre_user, u_pred.sap_user
+    ORDER BY total_devueltos DESC, u_pred.nombre_user ASC
+  `;
+
+    /*const query = `
+    SELECT
+      u_pred.nombre_user AS prediador_nombre,
+      u_pred.sap_user AS prediador_sap,
+      COUNT(*)::int AS total_devueltos
     FROM ${SCHEMA1}.zcatt_dlle_trmte AS z
     INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u_rev
       ON z.cd_func_entrega = u_rev.sap_user AND u_rev.id_role_user = 1
@@ -188,7 +293,7 @@ async function obtenerDevueltosPorPrediadorResumen() {
       AND z.devuelto = 'X'
     GROUP BY u_pred.nombre_user, u_pred.sap_user
     ORDER BY total_devueltos DESC, u_pred.nombre_user ASC
-  `;
+  `;*/
 
   const result = await pool.query(query);
   return result.rows;
@@ -205,7 +310,9 @@ async function obtenerDevueltosPorPrediadorResumen() {
  * - sortField (string)
  * - sortOrder ('ascend'|'descend')
  */
-async function obtenerDevueltosPorPrediadorDetalle(params = {}) {
+
+
+/*async function obtenerDevueltosPorPrediadorDetalle(params = {}) {
   const {
     prediadorSap = null,
     page = 1,
@@ -319,6 +426,136 @@ async function obtenerDevueltosPorPrediadorDetalle(params = {}) {
       ON z.cd_func_entrega = u_rev.sap_user AND u_rev.id_role_user = 1
     INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u_pred
       ON z.cd_func_recibe = u_pred.sap_user AND u_pred.id_role_user = 3
+    ${whereSql}
+    ORDER BY ${orderBy}
+    LIMIT ${limit} OFFSET ${offset}
+  `;
+
+  const dataResult = await pool.query(dataQuery, values);
+
+  return {
+    total,
+    page: Math.max(1, Number(page) || 1),
+    pageSize: limit,
+    rows: dataResult.rows || [],
+  };
+}*/
+
+async function obtenerDevueltosPorPrediadorDetalle(params = {}) {
+  const {
+    prediadorSap = null,
+    page = 1,
+    pageSize = 10,
+    sortField = 'dias_transcurridos',
+    sortOrder = 'descend',
+  } = params;
+
+  const limit = Math.max(1, Math.min(Number(pageSize) || 10, 200));
+  const offset = (Math.max(1, Number(page) || 1) - 1) * limit;
+
+  const where = [];
+  const values = [];
+
+  where.push(`z.devuelto = 'X'`);
+
+  if (prediadorSap) {
+    values.push(prediadorSap);
+    where.push(`u_pred.sap_user = $${values.length}`);
+  }
+
+  const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
+
+  const sortDir = sortOrder === 'ascend' ? 'ASC' : 'DESC';
+  let orderBy = `dias_transcurridos ${sortDir}`;
+
+  switch (sortField) {
+    case 'prediador_nombre':
+      orderBy = `prediador_nombre ${sortDir}`;
+      break;
+    case 'prediador_sap':
+      orderBy = `prediador_sap ${sortDir}`;
+      break;
+    case 'revisor_nombre':
+      orderBy = `revisor_nombre ${sortDir}`;
+      break;
+    case 'revisor_sap':
+      orderBy = `revisor_sap ${sortDir}`;
+      break;
+    case 'nm_solicitud':
+      orderBy = `nm_solicitud ${sortDir}`;
+      break;
+    case 'fc_recepcion_tmt':
+      orderBy = `fc_recepcion_tmt ${sortDir}`;
+      break;
+    case 'fc_salida_tmt':
+      orderBy = `fc_salida_tmt ${sortDir}`;
+      break;
+    case 'estado':
+      orderBy = `estado ${sortDir}`;
+      break;
+    case 'cumple_sla':
+      orderBy = `cumple_sla ${sortDir}`;
+      break;
+    case 'dias_transcurridos':
+    default:
+      orderBy = `dias_transcurridos ${sortDir}`;
+      break;
+  }
+
+  const countQuery = `
+    SELECT COUNT(*)::int AS total
+    FROM ${SCHEMA2}.mvw_vg_app_sgt_ttes AS z
+    INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u_rev
+      ON z.cd_func_entrega = u_rev.sap_user
+     AND u_rev.id_role_user = 1
+    INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u_pred
+      ON z.cd_func_recibe = u_pred.sap_user
+     AND u_pred.id_role_user = 3
+    ${whereSql}
+  `;
+
+  const countResult = await pool.query(countQuery, values);
+  const total = countResult.rows?.[0]?.total || 0;
+
+  const dataQuery = `
+    SELECT
+      u_pred.nombre_user AS prediador_nombre,
+      u_pred.sap_user AS prediador_sap,
+      u_rev.nombre_user AS revisor_nombre,
+      u_rev.sap_user AS revisor_sap,
+      z.nm_solicitud,
+      z.fc_recepcion_tmt,
+      CASE
+        WHEN z.sin_respuesta = true THEN NULL
+        ELSE z.fc_salida_tmt
+      END AS fc_salida_tmt,
+      CASE
+        WHEN z.sin_respuesta = true THEN 'SIN RESPUESTA'
+        ELSE 'CON RESPUESTA'
+      END AS estado,
+      CASE
+        WHEN z.sin_respuesta = true THEN (CURRENT_DATE - z.fc_recepcion_tmt)
+        ELSE z.dias_respuesta
+      END AS dias_transcurridos,
+      CASE
+        WHEN (
+          CASE
+            WHEN z.sin_respuesta = true THEN (CURRENT_DATE - z.fc_recepcion_tmt)
+            ELSE z.dias_respuesta
+          END
+        ) <= 5 THEN 'SI' ELSE 'NO'
+      END AS cumple_sla,
+      CASE
+        WHEN z.sin_respuesta = true THEN NULL
+        ELSE z.fc_salida_tmt
+      END AS fecha_salida_valida
+    FROM ${SCHEMA2}.mvw_vg_app_sgt_ttes AS z
+    INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u_rev
+      ON z.cd_func_entrega = u_rev.sap_user
+     AND u_rev.id_role_user = 1
+    INNER JOIN ${SCHEMA2}.tbl_users_sgt_tte AS u_pred
+      ON z.cd_func_recibe = u_pred.sap_user
+     AND u_pred.id_role_user = 3
     ${whereSql}
     ORDER BY ${orderBy}
     LIMIT ${limit} OFFSET ${offset}
