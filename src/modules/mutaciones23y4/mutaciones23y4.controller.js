@@ -9,7 +9,7 @@ const {
   getCorteDatosSap,
   getDevueltosPorPrediadorResumen,
   getDevueltosPorPrediadorDetalle,
-} = require('./mutaciones.service');
+} = require('./mutaciones23y4.service');
 
 function normalizeCountTotal(total) {
   if (total && typeof total === 'object' && total.total !== undefined) {
@@ -139,7 +139,7 @@ async function getCorteDatosSapHandler(req, res) {
 
 /**
  * ✅ BLOQUE 5 (Gráfica)
- * GET /mutaciones/prediadores/resumen
+ * GET /mutaciones1y5/prediadores/resumen
  */
 async function getDevueltosPorPrediadorResumenHandler(req, res) {
   try {
@@ -153,7 +153,7 @@ async function getDevueltosPorPrediadorResumenHandler(req, res) {
 
 /**
  * ✅ BLOQUE 5 (Tabla)
- * GET /mutaciones/prediadores/detalle?prediadorSap=&page=&pageSize=&sortField=&sortOrder=
+ * GET /mutaciones1y5/prediadores/detalle?prediadorSap=&page=&pageSize=&sortField=&sortOrder=
  */
 async function getDevueltosPorPrediadorDetalleHandler(req, res) {
   try {

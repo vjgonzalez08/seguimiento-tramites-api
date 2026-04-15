@@ -12,7 +12,7 @@ const {
   getCorteDatosSapHandler,
   getDevueltosPorPrediadorResumenHandler,
   getDevueltosPorPrediadorDetalleHandler,
-} = require('./mutaciones.controller');
+} = require('./mutaciones1y5.controller');
 
 router.get('/devueltos', getTotalTramitesDevueltosHandler);
 router.get('/devueltos-con-respuesta', getTramitesDevueltosConRespuestaHandler);
